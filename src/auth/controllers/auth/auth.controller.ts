@@ -46,8 +46,13 @@ export class AuthController {
       // Get the user's data
       const user = await admin.auth().getUser(userRecord.uid);
 
-      console.log('User Record', userRecord);
-      console.log('User', user);
+      // Temporary Code (List all users):
+      const userArray = await admin.auth().listUsers();
+      console.log('userArray', userArray);
+
+      // Testing Consoles:
+      // console.log('User Record', userRecord);
+      // console.log('User', user);
 
       // Compare the passwords
       const isValid = await bcrypt.compare(body.password, user.passwordHash);
@@ -64,6 +69,21 @@ export class AuthController {
     } catch (error) {
       // The token is invalid, so we return an error
       return { authenticated: false, error: error.message };
+    }
+  }
+
+  @Post('login/google')
+  async loginWithGoogle(@Body('idToken') idToken: string): Promise<any> {
+    try {
+      // Verify the ID token and get the corresponding user.
+      const user = await admin.auth().verifyIdToken(idToken);
+
+      // Create a custom token for the user.
+      const customToken = await admin.auth().createCustomToken(user.uid);
+
+      return { token: customToken };
+    } catch (error) {
+      throw error;
     }
   }
 
